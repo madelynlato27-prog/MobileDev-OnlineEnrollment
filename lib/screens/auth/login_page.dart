@@ -57,7 +57,7 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 if (emailController.text.isNotEmpty && 
                     passwordController.text.isNotEmpty) {
-                  Navigator.pushReplacementNamed(context, '/home');
+                  Navigator.pushReplacementNamed(context, '/dashboard');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Invalid Credentials',style: TextStyle(  color: Color.fromARGB(255, 255, 0, 0),        
