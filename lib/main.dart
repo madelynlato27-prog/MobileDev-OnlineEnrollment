@@ -5,6 +5,8 @@ import 'package:onlineenrollment/screens/auth/dashboard_page.dart';
 import 'package:onlineenrollment/screens/homepage/home_page.dart';
 import 'package:onlineenrollment/screens/auth/login_page.dart' ;
 import 'package:onlineenrollment/screens/auth/register_page.dart';
+import 'package:onlineenrollment/screens/homepage/about_page.dart';
+
 
 
 
@@ -34,6 +36,8 @@ class MyApp extends StatelessWidget {
         '/dashboard': (context) => const DashboardPage(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
+        '/about': (context) => const AboutPage(),
+
     
 
       },

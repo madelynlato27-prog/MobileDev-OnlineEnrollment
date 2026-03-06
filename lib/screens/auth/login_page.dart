@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; 
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -57,7 +59,28 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 if (emailController.text.isNotEmpty && 
                     passwordController.text.isNotEmpty) {
-                  Navigator.pushReplacementNamed(context, '/dashboard');
+                  //Navigator.pushReplacementNamed(context, '/dashboard');
+
+                  http.post(
+                    Uri.parse('https://dummyjson.com/auth/login'),
+                    body: {
+                      'username': emailController.text,
+                      'password': passwordController.text,
+                    },
+                  ).then((response) {
+                    if (response.statusCode == 200) {
+                      Navigator.pushReplacementNamed(context, '/dashboard');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Login Failed')),
+                      );
+                    }
+                  }).catchError((error) {
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('An error occurred')),
+                    );
+                  });
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Invalid Credentials',style: TextStyle(  color: Color.fromARGB(255, 255, 0, 0),        

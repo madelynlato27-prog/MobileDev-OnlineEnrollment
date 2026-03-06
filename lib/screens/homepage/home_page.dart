@@ -59,6 +59,7 @@ class HomePage extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
+   
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -90,6 +91,14 @@ class HomePage extends StatelessWidget {
                 Navigator.pushNamed(context, '/contact');
               },
             ),
+             ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('About'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/about');
+              },
+             ),
             ListTile(
               leading: const Icon(Icons.school),
               title: const Text('Courses'),
