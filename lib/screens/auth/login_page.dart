@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert'; 
+import 'package:onlineenrollment/service/auth_service.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController emailController = TextEditingController();
+    final TextEditingController usernameController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
 
     return Scaffold(
@@ -27,16 +26,15 @@ class LoginPage extends StatelessWidget {
               'ACLC COLLEGE OF MANDAUE',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 29, fontWeight: FontWeight.bold),
-              
             ),
-              const Text(
+            const Text(
               'Enrollment System',
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 40),
             TextField(
-              controller: emailController,
+              controller: usernameController,
               decoration: const InputDecoration(
                 labelText: 'Username',
                 border: OutlineInputBorder(),
@@ -54,49 +52,24 @@ class LoginPage extends StatelessWidget {
               ),
             ),
 
-           const SizedBox(height: 30),
+            const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {
-                if (emailController.text.isNotEmpty && 
+              onPressed: () async {
+                if (usernameController.text.isNotEmpty &&
                     passwordController.text.isNotEmpty) {
-                  //Navigator.pushReplacementNamed(context, '/dashboard');
-
-                  http.post(
-                    Uri.parse('https://dummyjson.com/auth/login'),
-                    body: {
-                      'username': emailController.text,
-                      'password': passwordController.text,
-                    },
-                  ).then((response) {
-                    if (response.statusCode == 200) {
-                      Navigator.pushReplacementNamed(context, '/dashboard');
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Login Failed')),
-                      );
-                    }
-                  }).catchError((error) {
-                    
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('An error occurred')),
-                    );
-                  });
+                  final username = usernameController.text;
+                  final password = passwordController.text;
+                  // login api invoke
+                  await studentLogin(context, username, password);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid Credentials',style: TextStyle(  color: Color.fromARGB(255, 255, 0, 0),        
-                fontWeight: FontWeight.bold,
-             ),
-           ),
-                    backgroundColor: const Color.fromARGB(255, 255, 252, 252),   
-             shape: RoundedRectangleBorder(
-             ),
+                    const SnackBar(
+                      content: Text('Please enter username and password'),
                     ),
                   );
                 }
               },
-  
-              
-                 
+
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: const Color.fromARGB(255, 36, 3, 156),
@@ -116,6 +89,34 @@ class LoginPage extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> studentLogin(
+    BuildContext context,
+    String username,
+    String password,
+  ) async {
+    try {
+      final service = AuthService();
+
+      final response = await service.login(
+        username: username,
+        password: password,
+      );
+
+      debugPrint('response: ${response.message}');
+      if (!context.mounted) return;
+      if (response.status == 200) {
+        // use pushAndRemoveUntil
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Server error')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed: $e')));
+    }
+  }
 }
-
-
