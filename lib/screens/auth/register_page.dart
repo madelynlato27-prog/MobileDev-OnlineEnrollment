@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
+    final TextEditingController studentIDController = TextEditingController();
+    final TextEditingController usernameController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
     final TextEditingController confirmPasswordController = TextEditingController();
 
@@ -29,20 +31,20 @@ class RegisterPage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Full Name',
+                controller: studentIDController,
+                decoration: const InputDecoration(
+                  labelText: 'Student ID',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                 
+                  prefixIcon: Icon(Icons.numbers),
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
-                controller: emailController,
+                controller: usernameController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
               ),
               const SizedBox(height: 20),
@@ -68,30 +70,57 @@ class RegisterPage extends StatelessWidget {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  if (nameController.text.isNotEmpty &&
-                      emailController.text.isNotEmpty &&
-                      passwordController.text.isNotEmpty &&
-                      confirmPasswordController.text.isNotEmpty) {
-                    if (passwordController.text == confirmPasswordController.text) {
-                      Navigator.pushReplacementNamed(context, '/login');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Registration successful! Please login.')),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Passwords do not match')),
-                      );
-                    }
-                  } else {
+                  if (studentIDController.text.isEmpty ||
+                      usernameController.text.isEmpty ||
+                      passwordController.text.isEmpty ||
+                      confirmPasswordController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please fill all fields')),
                     );
+                    return;
                   }
+
+                  if (passwordController.text != confirmPasswordController.text) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Passwords do not match')),
+                    );
+                    return;
+                  }
+
+                  // API endpoint for creating login
+                  String url = 'https://localhost:44341/Login/Creating/Student';
+
+                  http.post(
+                    Uri.parse(url),
+                    headers: {'Content-Type': 'application/json'},
+                    body: jsonEncode({
+                      'studentID': int.tryParse(studentIDController.text),
+                      'username': usernameController.text,
+                      'password': passwordController.text,
+                    }),
+                  ).then((response) {
+                    if (response.statusCode == 200) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Registration successful! Please login.')),
+                      );
+                      Navigator.pushReplacementNamed(context, '/login');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Registration failed: ${response.body}'),
+                        ),
+                      );
+                    }
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('An error occurred')),
+                    );
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   backgroundColor: const Color.fromARGB(255, 36, 3, 156),
-                  foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                  foregroundColor: Colors.white,
                 ),
                 child: const Text('Register'),
               ),
@@ -109,6 +138,3 @@ class RegisterPage extends StatelessWidget {
     );
   }
 }
-
-
-
