@@ -93,7 +93,7 @@ class WelcomePage extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          'Welcome Students!',
+                          'Welcome',
                           style: GoogleFonts.roboto(
                             fontSize:25 ,
                             color: Colors.white70,
