@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ACLC COLLEGE'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.blue.shade900,
-        elevation: 0,
+        title: const Text('ACLC COLLEGE',style: TextStyle(
+            fontWeight: FontWeight.bold,  
+     ),
+    ),
+      backgroundColor: const Color.fromARGB(255, 36, 3, 156),  
+         foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+          elevation: 0,
         actions: [
+
               Container(
             margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 48, 1, 166),
+              color: const Color.fromARGB(255, 18, 61, 255),
               borderRadius: BorderRadius.circular(8),
             ),
             child: TextButton(
@@ -37,14 +41,13 @@ class HomePage extends StatelessWidget {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.blue.shade900,
+              color: const Color.fromARGB(255, 248, 21, 21),
               borderRadius: BorderRadius.circular(8),
             ),
             child: TextButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Enroll Online clicked')),
-                );
+                  Navigator.pushNamed(context, '/enroll');
+
               },
               child: const Text(
                 'ENROLL ONLINE',
@@ -57,6 +60,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+        
         ],
       ),
    

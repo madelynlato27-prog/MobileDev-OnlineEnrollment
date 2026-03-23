@@ -8,21 +8,21 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  int _selectedIndex = -1; // -1 = main page, 0 = mission, 1 = chairman, etc.
+  int _selectedIndex = -1; // 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_getTitle()),
-        backgroundColor: Colors.blue.shade900,
+        backgroundColor: const Color.fromARGB(255, 36, 3, 156),
         foregroundColor: Colors.white,
         leading: _selectedIndex != -1
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
                   setState(() {
-                    _selectedIndex = -1; // Go back to main page
+                    _selectedIndex = -1; 
                   });
                 },
               )
@@ -36,9 +36,8 @@ class _AboutPageState extends State<AboutPage> {
     switch (_selectedIndex) {
       case 0:
         return 'MISSION AND VISION';
+     
       case 1:
-        return 'CHAIRMAN OFFICE';
-      case 2:
         return 'SCHOOL HYMN';
      
       default:
@@ -46,7 +45,7 @@ class _AboutPageState extends State<AboutPage> {
     }
   }
 
-  // Main Page with Clickable Text
+  //  Clickable Text
   Widget _buildMainPage() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -68,8 +67,6 @@ class _AboutPageState extends State<AboutPage> {
           ),
           const SizedBox(height: 30),
           _buildClickableText('MISSION AND VISION', 0),
-          const SizedBox(height: 15),
-          _buildClickableText('OFFICE OF THE CHAIRMAN AND VICE CHAIRMAN', 1),
           const SizedBox(height: 15),
           _buildClickableText('SCHOOL HYMN', 2),
           
@@ -97,14 +94,11 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 
-  // Detail Page based on selected index
   Widget _buildDetailPage() {
     switch (_selectedIndex) {
       case 0:
         return _buildMissionVisionPage();
       case 1:
-        return _buildChairmanPage();
-      case 2:
         return _buildHymnPage();
     
       default:
@@ -112,7 +106,6 @@ class _AboutPageState extends State<AboutPage> {
     }
   }
 
-  // Mission and Vision Page
   Widget _buildMissionVisionPage() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -139,42 +132,6 @@ class _AboutPageState extends State<AboutPage> {
             style: TextStyle(fontSize: 16, height: 1.5),
           ),
         ],
-      ),
-    );
-  }
-
-  // Chairman Page
-  Widget _buildChairmanPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          _buildPersonCard('Dr. Amable R. Aguiluz V', 'Chairman', Icons.person),
-          const SizedBox(height: 15),
-          _buildPersonCard('Dr. Bella C. Aguiluz', 'Vice Chairman', Icons.person),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPersonCard(String name, String position, IconData icon) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(child: Icon(icon)),
-            const SizedBox(width: 15),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(position, style: TextStyle(color: Colors.grey.shade600)),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 
 class ContactPage extends StatelessWidget {
-  const ContactPage({Key? key}) : super(key: key);
+  const ContactPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Contact Us'),
-        backgroundColor: Colors.blue.shade900,
+        backgroundColor: const Color.fromARGB(255, 36, 3, 156),
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            
             Container(
               padding: const EdgeInsets.all(20),
               
@@ -48,6 +49,7 @@ class ContactPage extends StatelessWidget {
                   Text('PHONE NUMBERS', 
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 73, 79, 73))),
                   SizedBox(height: 10),
+
                   Row(
                     children: [
                     Icon(Icons.phone, color: Colors.green), SizedBox(width: 10), Text('+63 (32) 123-4567')]),
@@ -73,6 +75,7 @@ class ContactPage extends StatelessWidget {
                   Text('EMAIL ADDRESSES', 
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 73, 79, 73))),
                   SizedBox(height: 10),
+
                   Row(
                     children: [
                       Icon(Icons.email, color: Colors.red), SizedBox(width: 10), Text('info@aclc.edu.ph')]),
@@ -97,6 +100,7 @@ class ContactPage extends StatelessWidget {
                   Text('ADDRESS', 
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 73, 79, 73))),
                   SizedBox(height: 10),
+
                   Row(
                     children: [
                       Icon(Icons.location_on, color: Colors.orange), SizedBox(width: 10), Text('Mandaue City, Cebu')]),
@@ -123,7 +127,6 @@ class ContactPage extends StatelessWidget {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 73, 79, 73))),
                   SizedBox(height: 10),
                   
-                  // Hours Section
                   Row(
                     children: [
                       Icon(Icons.access_time, color: Colors.purple), SizedBox(width: 10), Text('Mon-Fri: 8:00 AM - 5:00 PM')]),
