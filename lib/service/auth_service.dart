@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:onlineenrollment/model/login_response.dart';
 
 class AuthService {
-  final baseUrl = 'http://172.20.10.3:5080';
+  final baseUrl = 'http://10.155.6.150:5080';
   final dio = Dio();
 
   Future<LoginResponse> login({
