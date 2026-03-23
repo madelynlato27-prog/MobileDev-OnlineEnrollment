@@ -93,7 +93,7 @@ class WelcomePage extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          'Welcome',
+                          'Welcome Students!',
                           style: GoogleFonts.roboto(
                             fontSize:25 ,
                             color: Colors.white70,
@@ -183,7 +183,7 @@ class WelcomePage extends StatelessWidget {
                   
                   const SizedBox(height: 50),
                   
-                  // Footer
+                  
                   Column(
                     children: [
                       const Divider(
