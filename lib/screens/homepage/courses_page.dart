@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CoursesPage extends StatelessWidget {
   CoursesPage({super.key});
@@ -24,54 +25,82 @@ class CoursesPage extends StatelessWidget {
       'description': 'Financial accounting and auditing',
       'years': '4 years'
     },
-  
-  
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bachelor\'s Degree Courses'),
-        backgroundColor: const Color.fromARGB(255, 36, 3, 156),
-        foregroundColor: Colors.white,
-      ),
-      body: ListView.builder(
+    return Container(
+      color: Colors.grey.shade50,
+      child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: courses.length,
         itemBuilder: (context, index) {
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    courses[index]['title']!,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 31, 4, 150),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    courses[index]['description']!,
-                    style: TextStyle(fontSize: 14, color: const Color.fromARGB(255, 0, 0, 0)),
-                  ),
-                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.access_time, size: 16, color: Colors.orange),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2901B7).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.school,
+                          color: Color(0xFF2901B7),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          courses[index]['title']!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF2901B7),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    courses[index]['description']!,
+                    style: GoogleFonts.roboto(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.access_time, size: 14, color: Colors.orange),
                       const SizedBox(width: 5),
                       Text(
                         courses[index]['years']!,
-                        style: TextStyle(fontSize: 12, color: const Color.fromARGB(255, 0, 0, 0)),
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          color: Colors.orange.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
