@@ -25,11 +25,10 @@ class _DocumentPageState extends State<DocumentPage> {
   
   List<Map<String, dynamic>> documents = [
     {'name': 'Birth Certificate', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
-    {'name': 'Report Card / Form 138', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
+    {'name': 'Report Card', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
     {'name': 'Good Moral Certificate', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
     {'name': 'Transfer Credentials (for transferees)', 'required': false, 'uploaded': false, 'bytes': null, 'uploadDate': null},
     {'name': '2x2 ID Picture', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
-    {'name': '1x1 ID Picture', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
   ];
 
   // Get current date and time
@@ -153,7 +152,6 @@ class _DocumentPageState extends State<DocumentPage> {
     );
   }
 
-  // View image with better UI
   void _viewImage(Uint8List imageBytes, String documentName) {
     showDialog(
       context: context,
@@ -363,7 +361,6 @@ class _DocumentPageState extends State<DocumentPage> {
                         ),
                         const SizedBox(height: 12),
                         
-                        // Progress indicator for required documents
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(

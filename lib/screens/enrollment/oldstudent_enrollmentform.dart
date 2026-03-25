@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'document_page.dart';
+import 'payment_page.dart'; // CHANGE: Import payment_page instead of document_page
 import '../widgets/page_header.dart';
 
-class EnrollmentFormPage extends StatefulWidget {
-  const EnrollmentFormPage({super.key});
+class OldstudentEnrollmentform extends StatefulWidget {
+  const OldstudentEnrollmentform({super.key});
 
   @override
-  State<EnrollmentFormPage> createState() => _EnrollmentFormPageState();
+  State<OldstudentEnrollmentform> createState() => _EnrollmentFormPageState();
 }
 
-class _EnrollmentFormPageState extends State<EnrollmentFormPage> {
+class _EnrollmentFormPageState extends State<OldstudentEnrollmentform> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController enrollmentIdController = TextEditingController();
@@ -44,37 +44,33 @@ class _EnrollmentFormPageState extends State<EnrollmentFormPage> {
   ];
 
   @override
-void initState() {
-  super.initState();
-  // Auto-generate Enrollment ID
-  enrollmentIdController.text = 'EN-${DateTime.now().year}-${DateTime.now().millisecond}';
-  
-  // Auto-generate School Year
-  _autoGenerateSchoolYear();
-  
-  // Auto-select current semester
-  _autoSelectSemester();
-}
-
-void _autoGenerateSchoolYear() {
-  int currentYear = DateTime.now().year;
-  int nextYear = currentYear + 1;
-  
-  // School year format: "2024-2025"
-  schoolYearController.text = '$currentYear-$nextYear';
-}
-
-void _autoSelectSemester() {
-  int currentMonth = DateTime.now().month;
-  
-  // 1st Semester: August to January (months 8,9,10,11,12,1)
-  // 2nd Semester: February to July (months 2,3,4,5,6,7)
-  if (currentMonth >= 8 || currentMonth == 1) {
-    selectedSemester = '1st Semester';
-  } else {
-    selectedSemester = '2nd Semester';
+  void initState() {
+    super.initState();
+    // Auto-generate Enrollment ID
+    enrollmentIdController.text = 'EN-${DateTime.now().year}-${DateTime.now().millisecond}';
+    
+    // Auto-generate School Year
+    _autoGenerateSchoolYear();
+    
+    // Auto-select current semester
+    _autoSelectSemester();
   }
-}
+
+  void _autoGenerateSchoolYear() {
+    int currentYear = DateTime.now().year;
+    int nextYear = currentYear + 1;
+    schoolYearController.text = '$currentYear-$nextYear';
+  }
+
+  void _autoSelectSemester() {
+    int currentMonth = DateTime.now().month;
+    if (currentMonth >= 8 || currentMonth == 1) {
+      selectedSemester = '1st Semester';
+    } else {
+      selectedSemester = '2nd Semester';
+    }
+  }
+  
   @override
   void dispose() {
     enrollmentIdController.dispose();
@@ -109,14 +105,12 @@ void _autoSelectSemester() {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Step Indicator
+                    // Step Indicator - Only Info and Payment (no Documents)
                     Row(
                       children: [
                         _buildStep(1, 'Info', true),
                         Expanded(child: Container(height: 2, color: const Color(0xFF2901B7))),
-                        _buildStep(2, 'Docs', false),
-                        Expanded(child: Container(height: 2, color: Colors.grey.shade300)),
-                        _buildStep(3, 'Payment', false),
+                        _buildStep(2, 'Payment', false),
                       ],
                     ),
                     
@@ -129,7 +123,7 @@ void _autoSelectSemester() {
                       children: [
                         _buildReadOnlyField(
                           controller: enrollmentIdController,
-                          label: 'Enrollment ID',
+                          label: 'STUDENT ID',
                           icon: Icons.confirmation_number,
                         ),
                         const SizedBox(height: 15),
@@ -266,17 +260,18 @@ void _autoSelectSemester() {
                     
                     const SizedBox(height: 30),
                     
-                    // Next Button
+                    // Next Button - Navigates to Payment Page
                     SizedBox(
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
+                            // CHANGE: Navigate to PaymentPage instead of DocumentPage
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DocumentPage(
+                                builder: (context) => PaymentPage(
                                   studentName: '${firstNameController.text} ${lastNameController.text}',
                                   studentId: studentIdController.text,
                                   enrollmentId: enrollmentIdController.text,
@@ -293,7 +288,7 @@ void _autoSelectSemester() {
                           elevation: 2,
                         ),
                         child: Text(
-                          'NEXT → DOCUMENTS',
+                          'NEXT',
                           style: GoogleFonts.montserrat(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
