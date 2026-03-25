@@ -31,33 +31,13 @@ class _PaymentPageState extends State<PaymentPage> {
       fee: '0',
     ),
     PaymentOption(
-      title: 'Maya (formerly PayMaya)',
-      icon: Icons.phone_iphone,
-      color: const Color(0xFF6A1B9A),
-      description: 'Quick and secure payments',
-      fee: '0',
-    ),
-    PaymentOption(
       title: 'Credit/Debit Card',
       icon: Icons.credit_card,
       color: const Color(0xFFF39C12),
       description: 'Visa, Mastercard, JCB',
       fee: '0',
     ),
-    PaymentOption(
-      title: 'Bank Transfer',
-      icon: Icons.account_balance,
-      color: const Color(0xFF2ECC71),
-      description: 'BPI, BDO, Metrobank, etc.',
-      fee: '0',
-    ),
-    PaymentOption(
-      title: 'Cash Payment',
-      icon: Icons.attach_money,
-      color: const Color(0xFFE74C3C),
-      description: 'Pay at the registrar office',
-      fee: '0',
-    ),
+   
   ];
 
   void _processPayment() {
@@ -141,7 +121,7 @@ class _PaymentPageState extends State<PaymentPage> {
               child: Column(
                 children: [
                   Text(
-                    'Enrollment ID: ${widget.enrollmentId}',
+                    'STUDENT ID: ${widget.enrollmentId}',
                     style: GoogleFonts.roboto(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -165,7 +145,7 @@ class _PaymentPageState extends State<PaymentPage> {
                 Navigator.pop(context);
                 Navigator.pushNamedAndRemoveUntil(
                   context,
-                  '/dashboard',
+                  '/welcome',
                   (route) => false,
                 );
               },
@@ -177,7 +157,7 @@ class _PaymentPageState extends State<PaymentPage> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(
-                'GO TO DASHBOARD',
+                'CONFIRM',
                 style: GoogleFonts.montserrat(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -192,14 +172,11 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    double totalAmount = 12500.00;
-    double downPayment = totalAmount * 0.3;
-    double remainingBalance = totalAmount - downPayment;
-
+    double totalAmount = 3950.00;
+  
     return Scaffold(
       body: Column(
         children: [
-          // PageHeader without subtitle (uses default school name from PageHeader)
           const PageHeader(
             showBackButton: true,
           ),
@@ -294,16 +271,11 @@ class _PaymentPageState extends State<PaymentPage> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          _buildSummaryRow('Total Tuition Fee', '₱${totalAmount.toStringAsFixed(2)}'),
-                          _buildSummaryRow('Down Payment (30%)', '₱${downPayment.toStringAsFixed(2)}'),
-                          _buildSummaryRow('Remaining Balance', '₱${remainingBalance.toStringAsFixed(2)}'),
+                          _buildSummaryRow('Total Downpayment Fee', '₱${totalAmount.toStringAsFixed(2)}'),
+                        
                           const Divider(height: 24),
-                          _buildSummaryRow(
-                            'Amount Due',
-                            '₱${downPayment.toStringAsFixed(2)}',
-                            isBold: true,
-                            isHighlight: true,
-                          ),
+                        
+                        
                         ],
                       ),
                     ),
