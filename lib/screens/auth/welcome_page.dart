@@ -1,8 +1,104 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../enrollment/tracking_page.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
+
+  void _showTrackingDialog(BuildContext context) {
+    final TextEditingController studentIdController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.track_changes, color: const Color(0xFF2901B7), size: 28),
+            const SizedBox(width: 10),
+            Text(
+              'Track Application',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2901B7),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Enter your Student ID to track your application status',
+              style: GoogleFonts.roboto(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: studentIdController,
+              decoration: InputDecoration(
+                labelText: 'Student ID',
+                hintText: 'Enter your student ID',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: const Icon(Icons.person),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.roboto(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (studentIdController.text.isNotEmpty) {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TrackingPage(
+                      studentId: studentIdController.text,
+                      studentName: 'Student',
+                    ),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter your Student ID'),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 74, 113, 230),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Track',
+              style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.bold,
+                 color: const Color.fromARGB(255, 255, 255, 255),
+                
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,102 +184,105 @@ class WelcomePage extends StatelessWidget {
                   const SizedBox(height: 40),
                   
                   // Welcome Text
-                  Container(
-
-                    child: Column(
-                      children: [
-                        Text(
-                          'Welcome Students!',
-                          style: GoogleFonts.roboto(
-                            fontSize:25 ,
-                            color: Colors.white70,
-                          ),
-                        ),
-                       
-                      ],
+                  Text(
+                    'Welcome Students!',
+                    style: GoogleFonts.roboto(
+                      fontSize: 25,
+                      color: Colors.white70,
                     ),
                   ),
                   
                   const SizedBox(height: 30),
                   
-                  // Description Card
-                  Container(
-                 
-                    child: Text(
-                      'Enroll in your course online. Manage your enrollment easily and securely. Start your journey with us today!',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.roboto(
-                        fontSize: 14,
-                        color: Colors.white,
-                        height: 1.5,
-                      ),
+                  // Description
+                  Text(
+                    'Enroll in your course online. Manage your enrollment easily and securely. Start your journey with us today!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.roboto(
+                      fontSize: 14,
+                      color: Colors.white,
+                      height: 1.5,
                     ),
                   ),
                   
                   const SizedBox(height: 50),
                   
-                  // Buttons
-                  Column(
-                    children: [
-                      // Enroll Now Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/enroll');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF2901B7),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            elevation: 3,
-                          ),
-                          child: Text(
-                            'ENROLL NOW',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2901B7),
-                            ),
-                          ),
+                  // ENROLL NOW Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/enroll');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF2901B7),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 3,
+                      ),
+                      child: Text(
+                        'ENROLL NOW',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2901B7),
                         ),
                       ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Login Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white, width: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                          child: Text(
-                            'LOGIN',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 16),
                   
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Text(
+                        'LOGIN',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
                   
+                  const SizedBox(height: 20),
+                  
+                  GestureDetector(
+                    onTap: () => _showTrackingDialog(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        'Track Application',
+                        style: GoogleFonts.montserrat(    
+                         fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                          decoration: TextDecoration.underline,
+
+
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // Footer
                   Column(
                     children: [
                       const Divider(
