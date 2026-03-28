@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:onlineenrollment/screens/homepage/about_page.dart';
 import 'package:onlineenrollment/screens/homepage/contact_page.dart';
 import 'package:onlineenrollment/screens/homepage/courses_page.dart';
+import 'package:onlineenrollment/screens/homepage/admission_page.dart'; // Add this import
 import 'package:onlineenrollment/screens/widgets/page_header.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -19,8 +20,9 @@ class _DashboardPageState extends State<DashboardPage> {
   final List<Widget> _pages = [
     const DashboardContent(),
     const AboutPage(),
-     CoursesPage(),
+          CoursesPage(),
     const ContactPage(),
+    const AdmissionPage(), // Add Admission Page here
   ];
 
   @override
@@ -120,6 +122,12 @@ class _DashboardPageState extends State<DashboardPage> {
               title: 'Contact',
               index: 3,
               isSelected: _selectedIndex == 3,
+            ),
+            _buildDrawerItem(
+              icon: Icons.description,
+              title: 'Admission',
+              index: 4,
+              isSelected: _selectedIndex == 4,
             ),
             const Divider(height: 24, thickness: 1),
             _buildDrawerItem(

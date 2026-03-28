@@ -9,6 +9,7 @@ import 'package:onlineenrollment/screens/homepage/about_page.dart';
 import 'package:onlineenrollment/screens/auth/welcome_page.dart';
 import 'package:onlineenrollment/screens/enrollment/newstudent_enrollmentform.dart';
 import 'package:onlineenrollment/screens/enrollment/oldstudent_enrollmentform.dart';
+import 'package:onlineenrollment/screens/homepage/admission_page.dart';
 
 
 void main() {
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
   '/contact': (context) => const ContactPage(),
   '/enroll': (context) => const NewstudentEnrollmentform(),
     '/enroll-old': (context) => const OldstudentEnrollmentform(),
+  '/admission': (context) => const AdmissionPage(),
 
 
       },
