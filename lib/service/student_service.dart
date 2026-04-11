@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 class StudentService   {
-  final baseUrl = 'http://10.155.6.150:5080';
+  final baseUrl = 'http://192.168.254.102:5080';
   final dio = Dio();
 
   Future<dynamic> createEnrollment({
@@ -18,7 +18,7 @@ class StudentService   {
   }) async {
     try {
       final response = await dio.post(
-        '$baseUrl/Student', // 👈 YOUR API
+        '$baseUrl/api/auth/login',
         data: {
           "firstName": firstName,
           "lastName": lastName,
