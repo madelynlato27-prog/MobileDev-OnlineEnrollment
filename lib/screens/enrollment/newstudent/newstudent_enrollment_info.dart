@@ -112,7 +112,7 @@ class _EnrollmentInfoPageState extends State<EnrollmentInfoPage> {
         'YearLevel': yearLevelInt,
         'SchoolYear': schoolYear,
         'Semester': selectedSemester,
-        'EnrollmentStatus': 'Pending', // ✅ REQUIRED BY API!
+        'EnrollmentStatus': 'Pending',
       };
 
       print('📤 Sending: $enrollmentData');

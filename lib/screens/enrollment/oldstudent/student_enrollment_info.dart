@@ -16,7 +16,7 @@ class StudentEnrollmentPage extends StatefulWidget {
 
 class _StudentEnrollmentPageState extends State<StudentEnrollmentPage> {
   final TextEditingController schoolYearController = TextEditingController();
-  String? selectedCourse; // Auto gikan sa current enrollment
+  String? selectedCourse;
   String? selectedYearLevel;
   String? selectedSemester;
   bool _isLoading = true;
@@ -47,8 +47,7 @@ class _StudentEnrollmentPageState extends State<StudentEnrollmentPage> {
         final currentEnrollment = response['data'].first;
 
         setState(() {
-          selectedCourse =
-              currentEnrollment['course']; // ✅ Auto gikan sa database
+          selectedCourse = currentEnrollment['course'];
           _hasExistingEnrollment = true;
           _isLoading = false;
         });
@@ -107,8 +106,7 @@ class _StudentEnrollmentPageState extends State<StudentEnrollmentPage> {
     try {
       final enrollmentData = {
         'StudentID': widget.studentData['studentID'],
-        'Course': selectedCourse, // ✅ Auto gikan sa database, dili maka-pili
-        'YearLevel': int.parse(selectedYearLevel!),
+        'Course': selectedCourse,
         'SchoolYear': schoolYearController.text,
         'Semester': selectedSemester,
         'EnrollmentStatus': 'Pending',
@@ -254,7 +252,6 @@ class _StudentEnrollmentPageState extends State<StudentEnrollmentPage> {
                               ? const Center(child: CircularProgressIndicator())
                               : Column(
                                   children: [
-                                    // ✅ Course - READ ONLY (dili maka-pili, auto gikan sa database)
                                     TextFormField(
                                       initialValue:
                                           selectedCourse ?? 'Loading...',
@@ -268,7 +265,6 @@ class _StudentEnrollmentPageState extends State<StudentEnrollmentPage> {
                                     ),
                                     const SizedBox(height: 15),
 
-                                    // ✅ Year Level - Pwede maka-pili
                                     DropdownButtonFormField<String>(
                                       value: selectedYearLevel,
                                       decoration: const InputDecoration(
@@ -288,7 +284,6 @@ class _StudentEnrollmentPageState extends State<StudentEnrollmentPage> {
                                     ),
                                     const SizedBox(height: 15),
 
-                                    // ✅ School Year - Auto (read-only)
                                     TextFormField(
                                       controller: schoolYearController,
                                       enabled: false,
@@ -301,7 +296,6 @@ class _StudentEnrollmentPageState extends State<StudentEnrollmentPage> {
                                     ),
                                     const SizedBox(height: 15),
 
-                                    // ✅ Semester - Pwede maka-pili
                                     DropdownButtonFormField<String>(
                                       value: selectedSemester,
                                       decoration: const InputDecoration(

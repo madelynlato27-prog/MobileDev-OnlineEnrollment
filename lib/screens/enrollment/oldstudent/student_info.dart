@@ -163,7 +163,6 @@ class _StudentInfoPageState extends State<StudentInfoPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // ✅ Student Info Card with BLUE GRADIENT HEADER (same as Enrollment Info)
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
