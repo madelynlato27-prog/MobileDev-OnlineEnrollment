@@ -1,19 +1,22 @@
+// lib/screens/enrollment/document_page.dart
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'payment_page.dart';
-import '../widgets/page_header.dart'; // Add this if you want consistent header
+import '../widgets/page_header.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:onlineenrollment/services/api_service.dart';
 
 class DocumentPage extends StatefulWidget {
-  final String studentName;
   final String studentId;
   final String enrollmentId;
+  final String studentName;
 
   const DocumentPage({
     super.key,
-    required this.studentName,
     required this.studentId,
     required this.enrollmentId,
+    required this.studentName,
   });
 
   @override
@@ -22,231 +25,253 @@ class DocumentPage extends StatefulWidget {
 
 class _DocumentPageState extends State<DocumentPage> {
   final ImagePicker _picker = ImagePicker();
-  
+
   List<Map<String, dynamic>> documents = [
-    {'name': 'Birth Certificate', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
-    {'name': 'Report Card', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
-    {'name': 'Good Moral Certificate', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
-    {'name': 'Transfer Credentials (for transferees)', 'required': false, 'uploaded': false, 'bytes': null, 'uploadDate': null},
-    {'name': '2x2 ID Picture', 'required': true, 'uploaded': false, 'bytes': null, 'uploadDate': null},
+    {
+      'name': 'Birth Certificate',
+      'required': true,
+      'uploaded': false,
+      'imageBytes': null,
+      'uploadDate': null,
+      'isUploading': false,
+    },
+    {
+      'name': 'Report Card',
+      'required': true,
+      'uploaded': false,
+      'imageBytes': null,
+      'uploadDate': null,
+      'isUploading': false,
+    },
+    {
+      'name': 'Good Moral Certificate',
+      'required': true,
+      'uploaded': false,
+      'imageBytes': null,
+      'uploadDate': null,
+      'isUploading': false,
+    },
+    {
+      'name': 'Transfer Credentials',
+      'required': false,
+      'uploaded': false,
+      'imageBytes': null,
+      'uploadDate': null,
+      'isUploading': false,
+    },
+    {
+      'name': '2x2 ID Picture',
+      'required': true,
+      'uploaded': false,
+      'imageBytes': null,
+      'uploadDate': null,
+      'isUploading': false,
+    },
   ];
 
-  // Get current date and time
   String _getCurrentDateTime() {
     final now = DateTime.now();
     return '${now.month}/${now.day}/${now.year} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
   }
 
-  // Format file size
-  String _getFileSize(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-  }
-
-  // Pick image with validation
   Future<void> _pickImage(int index) async {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.photo_camera, color: Colors.blue),
-                ),
-                title: const Text('Take a Photo'),
-                subtitle: const Text('Use camera to capture document'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  try {
-                    final XFile? photo = await _picker.pickImage(
-                      source: ImageSource.camera,
-                      imageQuality: 70,
-                      maxWidth: 1920,
-                      maxHeight: 1080,
-                    );
-                    if (photo != null) {
-                      final bytes = await photo.readAsBytes();
-                      final fileSize = await photo.length();
-                      setState(() {
-                        documents[index]['bytes'] = bytes;
-                        documents[index]['uploaded'] = true;
-                        documents[index]['uploadDate'] = _getCurrentDateTime();
-                        documents[index]['fileSize'] = fileSize;
-                      });
-                      _showSnackBar(
-                        '${documents[index]['name']} uploaded successfully',
-                        isError: false,
-                      );
-                    }
-                  } catch (e) {
-                    _showSnackBar('Error taking photo: $e', isError: true);
-                  }
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.photo_library, color: Colors.blue),
-                ),
-                title: const Text('Choose from Gallery'),
-                subtitle: const Text('Select from existing photos'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  try {
-                    final XFile? image = await _picker.pickImage(
-                      source: ImageSource.gallery,
-                      imageQuality: 70,
-                      maxWidth: 1920,
-                      maxHeight: 1080,
-                    );
-                    if (image != null) {
-                      final bytes = await image.readAsBytes();
-                      final fileSize = await image.length();
-                      setState(() {
-                        documents[index]['bytes'] = bytes;
-                        documents[index]['uploaded'] = true;
-                        documents[index]['uploadDate'] = _getCurrentDateTime();
-                        documents[index]['fileSize'] = fileSize;
-                      });
-                      _showSnackBar(
-                        '${documents[index]['name']} uploaded successfully',
-                        isError: false,
-                      );
-                    }
-                  } catch (e) {
-                    _showSnackBar('Error picking image: $e', isError: true);
-                  }
-                },
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+      builder: (_) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera),
+              title: const Text("Take Photo"),
+              onTap: () async {
+                Navigator.pop(context);
+                final photo = await _picker.pickImage(
+                  source: ImageSource.camera,
+                );
+                if (photo != null) await _showPreviewAndConfirm(index, photo);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text("Choose from Gallery"),
+              onTap: () async {
+                Navigator.pop(context);
+                final image = await _picker.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (image != null) await _showPreviewAndConfirm(index, image);
+              },
+            ),
+          ],
         );
       },
     );
   }
 
-  void _viewImage(Uint8List imageBytes, String documentName) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.95),
-      builder: (context) => GestureDetector(
-        onTap: () => Navigator.pop(context),
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              documentName,
-              style: const TextStyle(color: Colors.white),
-            ),
-            centerTitle: true,
-          ),
-          body: Center(
-            child: InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Image.memory(
-                imageBytes,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 200,
-                    color: Colors.grey.shade800,
-                    child: const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.broken_image, color: Colors.white, size: 50),
-                          SizedBox(height: 10),
-                          Text('Failed to load image', style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Future<void> _showPreviewAndConfirm(int index, XFile file) async {
+    final bytes = await file.readAsBytes();
 
-  void _showDeleteConfirmation(int index) {
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.warning, color: Colors.orange),
-            const SizedBox(width: 8),
-            const Text('Delete Document'),
+            Icon(Icons.image, color: const Color(0xFF2901B7)),
+            const SizedBox(width: 10),
+            Text(
+              'Preview: ${documents[index]['name']}',
+              style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
-        content: Text(
-          'Are you sure you want to delete ${documents[index]['name']}?',
-          style: const TextStyle(fontSize: 14),
+        content: SizedBox(
+          width: 300, // ✅ Fixed width instead of double.infinity
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(bytes, height: 200, fit: BoxFit.contain),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Is this the correct picture?',
+                style: GoogleFonts.roboto(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Click CONFIRM to upload, or REPLACE to choose another.',
+                style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'REPLACE',
+              style: TextStyle(color: Colors.orange),
+            ),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                documents[index]['bytes'] = null;
-                documents[index]['uploaded'] = false;
-                documents[index]['uploadDate'] = null;
-                documents[index]['fileSize'] = null;
-              });
-              Navigator.pop(context);
-              _showSnackBar('${documents[index]['name']} deleted', isError: false);
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              backgroundColor: const Color(0xFF2901B7),
             ),
-            child: const Text('DELETE'),
+            child: const Text('CONFIRM & UPLOAD'),
           ),
         ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _uploadDocument(index, file, bytes);
+    } else {
+      _pickImage(index);
+    }
+  }
+
+  Future<void> _uploadDocument(int index, XFile file, Uint8List bytes) async {
+    setState(() {
+      documents[index]['isUploading'] = true;
+    });
+
+    try {
+      final response = await ApiService.uploadDocument(
+        studentId: widget.studentId,
+        enrollmentId: widget.enrollmentId,
+        documentName: documents[index]['name'],
+        fileBytes: bytes,
+      );
+
+      if (response['status'] == 200) {
+        setState(() {
+          documents[index]['uploaded'] = true;
+          documents[index]['imageBytes'] = bytes;
+          documents[index]['uploadDate'] = _getCurrentDateTime();
+          documents[index]['isUploading'] = false;
+        });
+        _showSnackBar('${documents[index]['name']} uploaded successfully');
+      } else {
+        setState(() {
+          documents[index]['isUploading'] = false;
+        });
+        _showSnackBar('Upload failed: ${response['message']}', isError: true);
+      }
+    } catch (e) {
+      setState(() {
+        documents[index]['isUploading'] = false;
+      });
+      _showSnackBar('Upload error: $e', isError: true);
+    }
+  }
+
+  void _showImagePreview(int index) {
+    final imageBytes = documents[index]['imageBytes'];
+    if (imageBytes == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          width: 350, // ✅ Fixed width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                documents[index]['name'],
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF2901B7),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.memory(
+                  imageBytes,
+                  height: 250, // ✅ Fixed height
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      _pickImage(index);
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Replace'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -257,286 +282,87 @@ class _DocumentPageState extends State<DocumentPage> {
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(10),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+      ),
+    );
+  }
+
+  void _proceedToPayment() {
+    final requiredDocs = documents
+        .where((d) => d['required'] == true && d['uploaded'] == true)
+        .length;
+    final requiredCount = documents.where((d) => d['required'] == true).length;
+
+    if (requiredDocs < requiredCount) {
+      _showSnackBar('Please upload all required documents', isError: true);
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentPage(
+          studentId: widget.studentId,
+          enrollmentId: widget.enrollmentId,
+          studentName: widget.studentName,
         ),
-        duration: const Duration(seconds: 2),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final uploadedCount = documents.where((doc) => doc['uploaded'] == true).length;
-    final requiredCount = documents.where((doc) => doc['required'] == true).length;
-    final uploadedRequiredCount = documents
-        .where((doc) => doc['required'] == true && doc['uploaded'] == true)
+    final uploadedCount = documents
+        .where((d) => d['required'] && d['uploaded'])
         .length;
-    
-    final allRequiredUploaded = uploadedRequiredCount == requiredCount;
+    final requiredCount = documents.where((d) => d['required']).length;
+    final allRequiredUploaded = uploadedCount == requiredCount;
 
     return Scaffold(
       body: Column(
         children: [
-          // Consistent header with PageHeader
-          const PageHeader(
-            showBackButton: true,
-          ),
+          const PageHeader(showBackButton: true),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Progress Indicator
                   Row(
                     children: [
-                      _buildStep(1, 'Information', true),
+                      _step(1, 'Personal', false),
                       Expanded(
                         child: Container(
                           height: 2,
-                          color: const Color(0xFF2901B7),
+                          color: Colors.grey.shade300,
                         ),
                       ),
-                      _buildStep(2, 'Documents', true),
+                      _step(2, 'Enrollment', false),
                       Expanded(
                         child: Container(
                           height: 2,
-                          color: allRequiredUploaded 
-                              ? const Color(0xFF2901B7) 
-                              : Colors.grey.shade300,
+                          color: Colors.grey.shade300,
                         ),
                       ),
-                      _buildStep(3, 'Payment', false),
+                      _step(3, 'Documents', true),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                      _step(4, 'Payment', false),
                     ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // Header Section
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xFF2901B7).withOpacity(0.05),
-                          const Color(0xFF4A2FBD).withOpacity(0.02),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2901B7).withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.upload_file,
-                            size: 50,
-                            color: Color(0xFF2901B7),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Step 2: Upload Documents',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF2901B7),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Student: ${widget.studentName}',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          'ID: ${widget.studentId}',
-                          style: TextStyle(color: Colors.grey.shade600),
-                        ),
-                        const SizedBox(height: 12),
-                        
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Required Documents Progress',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Text(
-                                    '$uploadedRequiredCount/$requiredCount',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: LinearProgressIndicator(
-                                  value: uploadedRequiredCount / requiredCount,
-                                  backgroundColor: Colors.grey.shade200,
-                                  color: const Color(0xFF2901B7),
-                                  minHeight: 8,
-                                ),
-                              ),
-                              if (allRequiredUploaded)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.check_circle, color: Colors.green, size: 16),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'All required documents uploaded!',
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 24),
-
-                  // Documents List Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'DOCUMENTS ($uploadedCount/${documents.length})',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2901B7),
-                        ),
-                      ),
-                      if (uploadedCount > 0)
-                        TextButton.icon(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete All Documents'),
-                                content: const Text('Are you sure you want to delete all uploaded documents?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('CANCEL'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        for (var i = 0; i < documents.length; i++) {
-                                          documents[i]['bytes'] = null;
-                                          documents[i]['uploaded'] = false;
-                                          documents[i]['uploadDate'] = null;
-                                          documents[i]['fileSize'] = null;
-                                        }
-                                      });
-                                      Navigator.pop(context);
-                                      _showSnackBar('All documents deleted', isError: false);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                    ),
-                                    child: const Text('DELETE ALL'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.delete_sweep, size: 18),
-                          label: const Text('Delete All'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const Divider(),
-                  const SizedBox(height: 15),
-
-                  // Document List
-                  ...documents.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    Map<String, dynamic> doc = entry.value;
-                    return _buildDocumentTile(doc, index);
-                  }),
-
-                  const SizedBox(height: 30),
-
-                  // Next Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: allRequiredUploaded
-                          ? () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PaymentPage(
-                                    studentName: widget.studentName,
-                                    studentId: widget.studentId,
-                                    enrollmentId: widget.enrollmentId,
-                                  ),
-                                ),
-                              );
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2901B7),
-                        disabledBackgroundColor: Colors.grey.shade400,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        allRequiredUploaded ? 'PROCEED TO PAYMENT →' : 'UPLOAD ALL REQUIRED DOCUMENTS',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 25),
+                  _buildDocumentsCard(),
                   const SizedBox(height: 20),
+                  _buildProgressCard(
+                    uploadedCount,
+                    requiredCount,
+                    allRequiredUploaded,
+                  ),
+                  const SizedBox(height: 30),
+                  _buildNextButton(allRequiredUploaded),
                 ],
               ),
             ),
@@ -546,25 +372,29 @@ class _DocumentPageState extends State<DocumentPage> {
     );
   }
 
-  Widget _buildDocumentTile(Map<String, dynamic> doc, int index) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+  Widget _buildDocumentsCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10),
+        ],
       ),
-      elevation: 2,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
-            width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF2901B7).withOpacity(0.05),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF2901B7).withOpacity(0.05),
+                  const Color(0xFF4A2FBD).withOpacity(0.02),
+                ],
+              ),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
             ),
             child: Row(
@@ -573,232 +403,32 @@ class _DocumentPageState extends State<DocumentPage> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2901B7).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    Icons.description,
+                  child: const Icon(
+                    Icons.upload_file,
+                    color: Color(0xFF2901B7),
                     size: 20,
-                    color: const Color(0xFF2901B7),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    doc['name'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2901B7),
-                    ),
+                Text(
+                  'REQUIRED DOCUMENTS',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2901B7),
                   ),
                 ),
-                if (doc['required'])
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'Required',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
-          
-          // Image Preview or Upload Area
-          if (doc['uploaded'] && doc['bytes'] != null)
-            GestureDetector(
-              onTap: () => _viewImage(doc['bytes'], doc['name']),
-              child: Stack(
-                children: [
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    color: Colors.grey.shade100,
-                    child: Image.memory(
-                      doc['bytes'],
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.broken_image, size: 40, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text('Failed to load image'),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.tap_and_play, size: 12, color: Colors.white),
-                          SizedBox(width: 4),
-                          Text(
-                            'Tap to view',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            GestureDetector(
-              onTap: () => _pickImage(index),
-              child: Container(
-                height: 150,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.cloud_upload_outlined,
-                      size: 50,
-                      color: const Color(0xFF2901B7).withOpacity(0.5),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Tap to upload ${doc['name']}',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Supported formats: JPG, PNG',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          
-          // Footer
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                if (doc['uploaded'] && doc['uploadDate'] != null)
-                  Row(
-                    children: [
-                      Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Uploaded: ${doc['uploadDate']}',
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                      ),
-                      if (doc['fileSize'] != null) ...[
-                        const SizedBox(width: 12),
-                        Icon(Icons.storage, size: 14, color: Colors.grey.shade600),
-                        const SizedBox(width: 6),
-                        Text(
-                          _getFileSize(doc['fileSize']),
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                        ),
-                      ],
-                    ],
-                  ),
-                const SizedBox(height: 12),
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (doc['uploaded'])
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.check_circle, color: Colors.green, size: 14),
-                            const SizedBox(width: 4),
-                            const Text(
-                              'Uploaded',
-                              style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      const SizedBox.shrink(),
-                    
-                    Row(
-                      children: [
-                        if (doc['uploaded'] && doc['bytes'] != null) ...[
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
-                            onPressed: () => _showDeleteConfirmation(index),
-                            tooltip: 'Delete',
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.red.withOpacity(0.1),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton.icon(
-                            onPressed: () => _viewImage(doc['bytes'], doc['name']),
-                            icon: const Icon(Icons.visibility, size: 16),
-                            label: const Text('View'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2901B7),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        ] else
-                          ElevatedButton.icon(
-                            onPressed: () => _pickImage(index),
-                            icon: const Icon(Icons.cloud_upload, size: 16),
-                            label: const Text('Upload'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2901B7),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
+                for (int i = 0; i < documents.length; i++)
+                  _buildDocumentRow(i, documents[i]),
               ],
             ),
           ),
@@ -807,25 +437,188 @@ class _DocumentPageState extends State<DocumentPage> {
     );
   }
 
-  Widget _buildStep(int number, String label, bool isActive) {
+  Widget _buildDocumentRow(int index, Map<String, dynamic> doc) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: doc['uploaded'] ? () => _showImagePreview(index) : null,
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: doc['uploaded'] && doc['imageBytes'] != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(
+                        doc['imageBytes'],
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.cloud_upload,
+                      color: Colors.orange,
+                      size: 30,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  doc['name'],
+                  style: GoogleFonts.roboto(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  doc['uploaded']
+                      ? "Uploaded on ${doc['uploadDate']}"
+                      : "${doc['required'] ? 'Required' : 'Optional'} - Tap to upload",
+                  style: GoogleFonts.roboto(fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          doc['isUploading']
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : doc['uploaded']
+              ? Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.visibility,
+                        color: Colors.blue,
+                        size: 20,
+                      ),
+                      onPressed: () => _showImagePreview(index),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20,
+                    ),
+                  ],
+                )
+              : ElevatedButton(
+                  onPressed: () => _pickImage(index),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2901B7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    minimumSize: const Size(70, 35),
+                  ),
+                  child: const Text(
+                    "Upload",
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressCard(
+    int uploadedCount,
+    int requiredCount,
+    bool allRequiredUploaded,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Progress:',
+                style: GoogleFonts.roboto(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '$uploadedCount/$requiredCount documents uploaded',
+                style: GoogleFonts.roboto(
+                  color: allRequiredUploaded ? Colors.green : Colors.orange,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: uploadedCount / requiredCount,
+            backgroundColor: Colors.grey.shade300,
+            color: allRequiredUploaded ? Colors.green : const Color(0xFF2901B7),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextButton(bool allRequiredUploaded) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _proceedToPayment,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: allRequiredUploaded
+              ? const Color(0xFF2901B7)
+              : Colors.grey,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          allRequiredUploaded
+              ? 'PROCEED TO PAYMENT'
+              : 'UPLOAD REQUIRED DOCUMENTS',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _step(int num, String label, bool active) {
     return Column(
       children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF2901B7) : Colors.grey.shade200,
-            shape: BoxShape.circle,
-            border: !isActive ? Border.all(color: Colors.grey.shade300) : null,
-          ),
-          child: Center(
-            child: Text(
-              number.toString(),
-              style: TextStyle(
-                color: isActive ? Colors.white : Colors.grey.shade600,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: active
+              ? const Color(0xFF2901B7)
+              : Colors.grey.shade400,
+          child: Text(
+            '$num',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -834,8 +627,7 @@ class _DocumentPageState extends State<DocumentPage> {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: isActive ? const Color(0xFF2901B7) : Colors.grey,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+            color: active ? const Color(0xFF2901B7) : Colors.grey.shade600,
           ),
         ),
       ],

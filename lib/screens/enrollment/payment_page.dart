@@ -1,17 +1,19 @@
+// lib/screens/enrollment/payment_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/page_header.dart';
+import 'package:onlineenrollment/services/api_service.dart';
 
 class PaymentPage extends StatefulWidget {
-  final String studentName;
   final String studentId;
   final String enrollmentId;
+  final String studentName;
 
   const PaymentPage({
     super.key,
-    required this.studentName,
     required this.studentId,
     required this.enrollmentId,
+    required this.studentName,
   });
 
   @override
@@ -27,312 +29,224 @@ class _PaymentPageState extends State<PaymentPage> {
       title: 'GCash',
       icon: Icons.phone_android,
       color: const Color(0xFF00B4D8),
-      description: 'Pay via GCash QR code or mobile number',
-      fee: '0',
+      description: 'Pay via GCash',
     ),
     PaymentOption(
       title: 'Credit/Debit Card',
       icon: Icons.credit_card,
       color: const Color(0xFFF39C12),
-      description: 'Visa, Mastercard, JCB',
-      fee: '0',
+      description: 'Visa / Mastercard',
     ),
-   
   ];
 
-  void _processPayment() {
-    if (selectedPaymentMethod == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select a payment method',
-            style: GoogleFonts.roboto(),
-          ),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      isProcessing = true;
-    });
-
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        isProcessing = false;
-      });
-      _showPaymentSuccessDialog();
-    });
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
-  void _showPaymentSuccessDialog() {
+  void _showSuccess() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.check_circle,
-                size: 60,
-                color: Colors.green.shade700,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Payment Successful!',
-              style: GoogleFonts.montserrat(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.green.shade700,
-              ),
-            ),
-          ],
-        ),
+        title: const Text("Enrollment Submitted!"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Your enrollment payment has been processed successfully.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(fontSize: 14),
-            ),
+            const Icon(Icons.check_circle, color: Colors.green, size: 60),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'STUDENT ID: ${widget.enrollmentId}',
-                    style: GoogleFonts.roboto(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Student: ${widget.studentName}',
-                    style: GoogleFonts.roboto(fontSize: 12),
-                  ),
-                ],
-              ),
+            Text(
+              'Student ID: ${widget.studentId}',
+              style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text('Your enrollment has been successfully submitted.'),
+            const SizedBox(height: 8),
+            Text(
+              'Check email for updates.',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),
         actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/welcome',
-                  (route) => false,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2901B7),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: Text(
-                'CONFIRM',
-                style: GoogleFonts.montserrat(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/welcome',
+                (route) => false,
+              );
+            },
+            child: const Text("OK"),
           ),
         ],
       ),
     );
   }
 
+  Future<void> _processPayment() async {
+    if (selectedPaymentMethod == null) {
+      _showError("Please select payment method");
+      return;
+    }
+
+    setState(() => isProcessing = true);
+
+    try {
+      final response = await ApiService.createPayment(
+        int.parse(widget.enrollmentId),
+        5000.00,
+      );
+      print('Payment Response: $response');
+
+      if (response['status'] == 200) {
+        _showSuccess();
+      } else {
+        _showError('Payment failed: ${response['message']}');
+      }
+    } catch (e) {
+      _showError('Error: $e');
+    } finally {
+      setState(() => isProcessing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    double totalAmount = 3950.00;
-  
     return Scaffold(
       body: Column(
         children: [
-          const PageHeader(
-            showBackButton: true,
-          ),
+          const PageHeader(showBackButton: true),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Step Title
-                  Center(
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.payment,
-                            size: 40,
-                            color: Colors.green,
-                          ),
+                  Row(
+                    children: [
+                      _step(1, 'Personal', false),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: Colors.grey.shade300,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Step 3: Payment',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green.shade700,
-                          ),
+                      ),
+                      _step(2, 'Enrollment', false),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: Colors.grey.shade300,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Complete your enrollment payment',
-                          style: GoogleFonts.roboto(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
+                      ),
+                      _step(3, 'Documents', false),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: Colors.grey.shade300,
                         ),
-                      ],
-                    ),
+                      ),
+                      _step(4, 'Payment', true),
+                    ],
                   ),
-                  
                   const SizedBox(height: 30),
-                  
-                  // Payment Summary Card
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF2901B7),
-                          const Color(0xFF4A2FBD),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white.withOpacity(0.95),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF2901B7).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.receipt,
-                                  color: Color(0xFF2901B7),
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Payment Summary',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2901B7),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          _buildSummaryRow('Total Downpayment Fee', '₱${totalAmount.toStringAsFixed(2)}'),
-                        
-                          const Divider(height: 24),
-                        
-                        
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Payment Methods Section
                   Text(
-                    'Select Payment Method',
+                    "Select Payment Method",
                     style: GoogleFonts.montserrat(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF2901B7),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  ...paymentOptions.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    PaymentOption option = entry.value;
-                    return _buildPaymentOption(option, index);
-                  }),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Terms and Conditions
+                  const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
-                        Icon(
-                          Icons.info_outline,
-                          size: 18,
-                          color: Colors.orange.shade700,
-                        ),
-                        const SizedBox(width: 8),
+                        Icon(Icons.info_outline, color: Colors.green),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'By proceeding, you agree to the terms and conditions of the enrollment process.',
-                            style: GoogleFonts.roboto(
-                              fontSize: 11,
-                              color: Colors.grey.shade600,
+                            "Amount to Pay: ₱5,000.00 (Downpayment)",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Pay Now Button
+                  const SizedBox(height: 20),
+                  ...paymentOptions.map((option) {
+                    bool selected = selectedPaymentMethod == option.title;
+                    return GestureDetector(
+                      onTap: () =>
+                          setState(() => selectedPaymentMethod = option.title),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: selected
+                                ? Colors.green
+                                : Colors.grey.shade300,
+                            width: selected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          color: selected ? Colors.green.shade50 : Colors.white,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(option.icon, color: option.color, size: 30),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    option.title,
+                                    style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    option.description,
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (selected)
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 28,
+                              ),
+                            if (!selected)
+                              Radio<String>(
+                                value: option.title,
+                                groupValue: selectedPaymentMethod,
+                                onChanged: (value) => setState(
+                                  () => selectedPaymentMethod = value,
+                                ),
+                                activeColor: Colors.green,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -341,47 +255,38 @@ class _PaymentPageState extends State<PaymentPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2901B7),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 2,
                       ),
                       child: isProcessing
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'PROCESSING PAYMENT...',
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
-                          : Text(
-                              'PAY NOW',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 18,
+                          : const Text(
+                              "SUBMIT ENROLLMENT",
+                              style: TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
                     ),
                   ),
-                  
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Your enrollment will be processed after payment confirmation",
+                    style: GoogleFonts.roboto(
+                      fontSize: 11,
+                      color: Colors.grey.shade500,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             ),
@@ -391,130 +296,33 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String amount, {bool isBold = false, bool isHighlight = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-              color: isHighlight ? const Color(0xFF2901B7) : Colors.grey.shade700,
-            ),
-          ),
-          Text(
-            amount,
-            style: GoogleFonts.montserrat(
-              fontSize: 16,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-              color: isHighlight ? const Color(0xFF2901B7) : Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentOption(PaymentOption option, int index) {
-    bool isSelected = selectedPaymentMethod == option.title;
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedPaymentMethod = option.title;
-          });
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF2901B7).withOpacity(0.05) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? const Color(0xFF2901B7) : Colors.grey.shade200,
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSelected ? const Color(0xFF2901B7) : Colors.transparent,
-                    border: Border.all(
-                      color: isSelected ? const Color(0xFF2901B7) : Colors.grey.shade400,
-                      width: 2,
-                    ),
-                  ),
-                  child: isSelected
-                      ? const Icon(Icons.check, color: Colors.white, size: 14)
-                      : null,
-                ),
-                const SizedBox(width: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: option.color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(option.icon, color: option.color, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        option.title,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        option.description,
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      if (option.fee != '0')
-                        Text(
-                          'Processing Fee: ₱${option.fee}',
-                          style: GoogleFonts.roboto(
-                            fontSize: 10,
-                            color: Colors.orange.shade700,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey.shade400,
-                ),
-              ],
+  Widget _step(int num, String label, bool active) {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: active
+              ? const Color(0xFF2901B7)
+              : Colors.grey.shade400,
+          child: Text(
+            '$num',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
-      ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: active ? const Color(0xFF2901B7) : Colors.grey.shade600,
+            fontWeight: active ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -524,13 +332,10 @@ class PaymentOption {
   final IconData icon;
   final Color color;
   final String description;
-  final String fee;
-
   PaymentOption({
     required this.title,
     required this.icon,
     required this.color,
     required this.description,
-    required this.fee,
   });
 }

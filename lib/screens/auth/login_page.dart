@@ -1,6 +1,7 @@
+// lib/screens/auth/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:onlineenrollment/service/auth_service.dart';
+import 'package:onlineenrollment/services/api_service.dart';
 import 'package:onlineenrollment/screens/widgets/page_header.dart';
 
 class LoginPage extends StatefulWidget {
@@ -13,35 +14,35 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  int _loginAttempts = 0;
 
   @override
-  void dispose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
-
- @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          // Header with Logo and School Name
-          const PageHeader(
-            showBackButton: true,
-          ),
-          // Body Content
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
+    return WillPopScope(
+      onWillPop: () async {
+        // Navigate to welcome page instead of popping to black screen
+        Navigator.pushReplacementNamed(context, '/welcome');
+        return false; // Prevent default back button behavior
+      },
+      child: Scaffold(
+        body: Column(
+          children: [
+            PageHeader(
+              showBackButton: true,
+              onBackPressed: () {
+                // Go to welcome page when back button is pressed
+                Navigator.pushReplacementNamed(context, '/welcome');
+              },
+            ),
+            Expanded(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
                     const SizedBox(height: 70),
-                    
-                    // Login Card
                     Card(
                       elevation: 8,
                       shape: RoundedRectangleBorder(
@@ -55,9 +56,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: Column(
                           children: [
-                            // Welcome Text
                             Text(
-                              'Welcome!',
+                              'Student Login',
                               style: GoogleFonts.montserrat(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -66,13 +66,12 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Please enter your credentials',
+                              'Enter your credentials to continue',
                               style: GoogleFonts.roboto(
                                 fontSize: 14,
                                 color: Colors.grey[600],
                               ),
                             ),
-                            
                             const SizedBox(height: 30),
                             
                             // Username Field
@@ -80,24 +79,13 @@ class _LoginPageState extends State<LoginPage> {
                               controller: usernameController,
                               decoration: InputDecoration(
                                 labelText: 'Username',
-                                labelStyle: GoogleFonts.roboto(),
                                 hintText: 'Enter your username',
-                                hintStyle: GoogleFonts.roboto(color: Colors.grey.shade400),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF2901B7), width: 2),
                                 ),
                                 prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF2901B7)),
                               ),
                             ),
-                            
                             const SizedBox(height: 20),
                             
                             // Password Field
@@ -106,19 +94,9 @@ class _LoginPageState extends State<LoginPage> {
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
                                 labelText: 'Password',
-                                labelStyle: GoogleFonts.roboto(),
                                 hintText: 'Enter your password',
-                                hintStyle: GoogleFonts.roboto(color: Colors.grey.shade400),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF2901B7), width: 2),
                                 ),
                                 prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF2901B7)),
                                 suffixIcon: IconButton(
@@ -134,26 +112,6 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                             ),
-                            
-                            const SizedBox(height: 12),
-                            
-                            // Forgot Password
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  _showForgotPasswordDialog(context);
-                                },
-                                child: Text(
-                                  'Forgot Password?',
-                                  style: GoogleFonts.roboto(
-                                    color: const Color(0xFF2901B7),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            
                             const SizedBox(height: 20),
                             
                             // Login Button
@@ -164,11 +122,9 @@ class _LoginPageState extends State<LoginPage> {
                                 onPressed: _isLoading ? null : _handleLogin,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2901B7),
-                                  foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  elevation: 2,
                                 ),
                                 child: _isLoading
                                     ? const SizedBox(
@@ -180,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                                         ),
                                       )
                                     : Text(
-                                        'Login',
+                                        'LOGIN',
                                         style: GoogleFonts.montserrat(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -190,182 +146,100 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             
-                           
+                            // Info for students
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Contact your administrator if you don\'t have login credentials.',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        color: Colors.blue.shade700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    
-                    const SizedBox(height: 20),
-                   
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  void _handleLogin() async {
-    if (usernameController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-      setState(() {
-        _isLoading = true;
-      });
-      
-      final username = usernameController.text;
-      final password = passwordController.text;
-      
-      await studentLogin(context, username, password);
-      
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please enter username and password',
-            style: GoogleFonts.roboto(),
-          ),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
+  Future<void> _handleLogin() async {
+    if (usernameController.text.isEmpty) {
+      _showSnackBar('Please enter your username', isError: true);
+      return;
     }
-  }
+    
+    if (passwordController.text.isEmpty) {
+      _showSnackBar('Please enter your password', isError: true);
+      return;
+    }
 
-  void _showForgotPasswordDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: Column(
-            children: [
-              const Icon(Icons.lock_reset, size: 48, color: Color(0xFF2901B7)),
-              const SizedBox(height: 10),
-              Text(
-                'Forgot Password?',
-                style: GoogleFonts.montserrat(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF2901B7),
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Please contact your administrator or registrar to reset your password.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(fontSize: 14),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                'Close',
-                style: GoogleFonts.roboto(color: Colors.grey),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Contact your registrar for password reset',
-                      style: GoogleFonts.roboto(),
-                    ),
-                    backgroundColor: Colors.orange,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2901B7),
-              ),
-              child: Text(
-                'Contact Registrar',
-                style: GoogleFonts.montserrat(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+    if (_loginAttempts >= 5) {
+      _showSnackBar('Too many failed attempts. Please try again later.', isError: true);
+      return;
+    }
 
-  Future<void> studentLogin(
-    BuildContext context,
-    String username,
-    String password,
-  ) async {
+    setState(() => _isLoading = true);
+    
+    final username = usernameController.text.trim();
+    final password = passwordController.text;
+    
     try {
-      final service = AuthService();
-
-      final response = await service.login(
-        username: username,
-        password: password,
-      );
-
-      debugPrint('response: ${response.message}');
+      final response = await ApiService.login(username, password);
       
-      if (!context.mounted) return;
+      print('Login Response: ${response['status']} - ${response['message']}');
+
+      if (!mounted) return;
       
-      if (response.status == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Login successful!',
-              style: GoogleFonts.roboto(),
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+      if (response['status'] == 200) {
+        _loginAttempts = 0;
+        _showSnackBar('Login successful!', isError: false);
+        
+        // Navigate to dashboard
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Invalid username or password',
-              style: GoogleFonts.roboto(),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        setState(() => _loginAttempts++);
+        _showSnackBar(response['message'] ?? 'Invalid username or password', isError: true);
+        passwordController.clear();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to login: $e',
-              style: GoogleFonts.roboto(),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      print('Login error: $e');
+      _showSnackBar('Connection error. Please check your internet.', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: isError ? 2 : 1),
+      ),
+    );
   }
 }
